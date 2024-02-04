@@ -13,25 +13,34 @@ namespace asdome_desktop
 {
 
 
-    public partial class Form1 : Form , ISender
+    public partial class Form1 : Form , ISender, ILoggerView
     {
-        Asdome_protocol asdptl;
+        //Asdome_protocol asdptl;
+        Controler ctr;
         public Form1()
         {
             InitializeComponent();
-            asdptl = new Asdome_protocol(this);
-
+            //asdptl = new Asdome_protocol(this);
+            Logger.view = this;
+            ctr = new Controler(this);
         }
 
         public void send(byte[] buff)
         {
             serialPort1.Write(buff, 0, buff.Length);     
         }
-        private void initSerialPort(string portName)
+        public void logShow(string msg)
         {
+            listBox3.Items.Add(msg);
+        }
+
+        private void initSerialPort(string portName, int BaudRate)
+        {
+            serialPort1.PortName = portName;    
+            serialPort1.BaudRate = BaudRate;    
             string[] defserialPortSettings = new  string [6];
             defserialPortSettings[0] = portName;
-            defserialPortSettings[1] = serialPort1.BaudRate.ToString();
+            defserialPortSettings[1] = BaudRate.ToString();
             defserialPortSettings[2] = serialPort1.Parity.ToString();
             defserialPortSettings[3] = serialPort1.DataBits.ToString();
             defserialPortSettings[4] = serialPort1.StopBits.ToString();
@@ -45,7 +54,9 @@ namespace asdome_desktop
         private void button1_Click(object sender, EventArgs e)
         {
             //serialPort1.WriteLine(textBox1.Text);
-            asdptl.status();
+            //asdptl.status();
+            ctr.status();
+
            
         }
 
@@ -55,15 +66,18 @@ namespace asdome_desktop
             label1.Text = serialPort1.IsOpen ? "Открыт" : "Закрыт";
             foreach (string s in SerialPort.GetPortNames())
             {
-                listBox1.Items.Add(s);
+                comboBox2.Items.Add(s);
             }
-            listBox1.Items.Add("COM10");
-            listBox1.Items.Add("COM15");
-            listBox1.SetSelected(0, true);
-            foreach (string s in asdptl.getCmdList().ToArray())
+            comboBox2.SelectedIndex = 0;
+
+            comboBox1.Items.AddRange(new string[] {"7200","9600", "115200"});
+            comboBox1.SelectedText = "9600";
+
+            foreach (string s in Asdome_protocol.getCmdList().ToArray())
             {
                 listBox2.Items.Add(s);
             }
+            listBox2.SetSelected(0, true);
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -80,9 +94,12 @@ namespace asdome_desktop
             {
                 serialPort1.Close();
             }
-            initSerialPort(listBox1.SelectedItem.ToString());
+            
+            initSerialPort(comboBox2.Text, int.Parse(comboBox1.Text));
             label1.Text = serialPort1.IsOpen ? "Открыт" : "Закрыт";
-            listBox1.Enabled = false;
+            comboBox2.Enabled = false;
+            comboBox1.Enabled = false;  
+
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -92,24 +109,25 @@ namespace asdome_desktop
                 serialPort1.Close();
             }
             label1.Text = serialPort1.IsOpen ? "Открыт" : "Закрыт";
-            listBox1.Enabled = true;
+            comboBox2.Enabled = false;  
+            comboBox1.Enabled = false;
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             if (serialPort1.IsOpen)
             {
-                string[] param = textBox2.Text.Split(',');
-                List<byte> dparam = new List<byte>();
-                foreach(string s in param) {
-                    dparam.Add(byte.Parse(s));
-                    dparam.Add(0x2c);
-                }
-                dparam.RemoveAt(dparam.Count - 1);
-                List<byte> buff = Encoding.ASCII.GetBytes(listBox2.SelectedItem.ToString()).ToList();
-                byte[] pbuff = buff.Concat(dparam).ToArray();   
-                asdptl.send(pbuff) ;
+                  
+                //asdptl.send(pbuff);
+                //asdptl.send(listBox2.SelectedIndex, textBox2.Text);
+                ctr.send(listBox2.SelectedIndex, textBox2.Text);
+                //Logger.log(listBox2.SelectedItem.ToString() + textBox2.Text);
             }
+        }
+
+        private void listBox3_DoubleClick(object sender, EventArgs e)
+        {
+            listBox3.Items.Clear();
         }
     }
 }
