@@ -22,7 +22,7 @@ namespace asdome_desktop
     {
         ISender sender;
         static  List<string> cmdList = new List<string> {
-            "STATUS1",
+            "STATUS",
             "STOPDOME",
             "OPENDOME",
             "CLOSEDOME",
