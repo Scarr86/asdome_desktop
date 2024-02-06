@@ -21,7 +21,7 @@ namespace asdome_desktop
 
         static public void log(string message)
         {
-            view.logShow(string.Format("{0:000}. {1:HH:mm:ss} | {2}", ++count, DateTime.Now, message) ); 
+            view.logShow(string.Format("{0:000}. {1:HH:mm:ss} | {2}", ++count, DateTime.Now, message) );
         } 
     }
 }

@@ -13,22 +13,46 @@ namespace asdome_desktop
 {
 
 
-    public partial class Form1 : Form , ISender, ILoggerView
+    public partial class Form1 : Form, IAnswerVisitor,  ILoggerView, ISender
     {
-        //Asdome_protocol asdptl;
-        Controler ctr;
+        IASDProtocol asdptl;
+        List<byte> buffer = new List<byte>();
         public Form1()
         {
             InitializeComponent();
-            //asdptl = new Asdome_protocol(this);
+            asdptl = new Asdome_protocol(this, this);
             Logger.view = this;
-            ctr = new Controler(this);
+        }
+        public void send(byte[] buffer, int len) 
+        {
+            serialPort1.Write(buffer, 0, len);
+        }
+
+        public void visit(StatusAnswer answer)
+        {
+            //TODO
+
+            //DELETE
+            visitLog(answer);
+        }
+        public void visit(StopdomeAnswer answer)
+        {
+            //TODO
+
+            //DELETE
+            visitLog(answer);
+        }
+
+        public void visitLog(Answer answer)
+        {
+            Console.WriteLine(string.Format("handler: {0} | {1}", answer.cmd, BitConverter.ToString(answer.param)));
         }
 
         public void send(byte[] buff)
         {
             serialPort1.Write(buff, 0, buff.Length);     
         }
+
         public void logShow(string msg)
         {
             listBox3.Items.Add(msg);
@@ -53,16 +77,13 @@ namespace asdome_desktop
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //serialPort1.WriteLine(textBox1.Text);
-            //asdptl.status();
-            ctr.status();
-
-           
+            //ASDRequest req = 
+            asdptl.status();
+            //serialPort1.Write(req.buff, 0, req.len);           
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
             label1.Text = serialPort1.IsOpen ? "Открыт" : "Закрыт";
             foreach (string s in SerialPort.GetPortNames())
             {
@@ -117,17 +138,42 @@ namespace asdome_desktop
         {
             if (serialPort1.IsOpen)
             {
-                  
-                //asdptl.send(pbuff);
-                //asdptl.send(listBox2.SelectedIndex, textBox2.Text);
-                ctr.send(listBox2.SelectedIndex, textBox2.Text);
-                //Logger.log(listBox2.SelectedItem.ToString() + textBox2.Text);
+                switch(listBox2.SelectedIndex)
+                {
+                    case 0: asdptl.status(); break;
+                    default: asdptl.send(listBox2.SelectedIndex, textBox2.Text); break;
+                }
+
             }
         }
 
         private void listBox3_DoubleClick(object sender, EventArgs e)
         {
             listBox3.Items.Clear();
+        }
+
+        private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            while (serialPort1.BytesToRead != 0)
+            {
+                byte rx = Convert.ToByte(serialPort1.ReadByte());
+                if (rx == 0x0d)
+                {
+                    Console.WriteLine(string.Format("recv: {0:HH:mm:ss} | {1}", DateTime.Now, BitConverter.ToString(buffer.ToArray()) + "-0D"));
+                    listBox1.Invoke(new EventHandler(delegate
+                    {
+                        listBox1.Items.Add(string.Format("{0:HH:mm:ss} | {1}", DateTime.Now, BitConverter.ToString(buffer.ToArray()) + "-0D"));
+
+                    }));
+                    asdptl.answer(buffer.ToArray());
+                    buffer.Clear();
+                }
+                else
+                {
+                    buffer.Add(rx);
+                }
+            }
+
         }
     }
 }
