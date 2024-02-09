@@ -15,7 +15,7 @@ namespace asdome_desktop
     internal class Simulator: Asdome_protocol 
     {
 
-        StatusAnswer stanwr = new StatusAnswer("STATUS", "STATUS", new byte[] { 0, 1, 90, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+        StatusAnswer stanwr = new StatusAnswer("STATUS", "STATUS", new byte[] { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         MoveParamsAnswer mpanwr = new MoveParamsAnswer("GETMOVEPARAMS", "MOVEPARAMS", new byte[] {1, 1, 1, 60, 0, 0, 1});
         TLMAnswer tlmpanwr = new TLMAnswer("GETTLM", "TLM", new byte[] {0xFF, 0, 0, 0, 0,});
         SortedDictionary<string, Answer> cmdAwr = new SortedDictionary<string, Answer>();
@@ -68,11 +68,11 @@ namespace asdome_desktop
 
         void  SimOpenDome()
         {
-            timer = new Timer(DecAngle, null, 0, 1000);
+            timer = new Timer(DecAngle, null, 0, 100);
         }
         void SimCloseDome()
         {
-            timer = new Timer(IncAngle, null, 0, 1000);
+            timer = new Timer(IncAngle, null, 0, 100);
         }
 
         void SimStopDome()
@@ -86,6 +86,7 @@ namespace asdome_desktop
             if ( stanwr.encoder1 < 1)
             {
                 stanwr.encoder1 = 0;
+                stanwr.stateSh1 = true;
             }
             else
             {
@@ -95,10 +96,15 @@ namespace asdome_desktop
             if (stanwr.encoder2 < 1)
             {
                 stanwr.encoder2 = 0;
+                stanwr.stateSh2 = true;
             }
             else
             {
                 stanwr.encoder2 -= 1;
+            }
+            if(stanwr.stateSh1 == true && stanwr.stateSh2 == true)
+            {
+                timer.Dispose();
             }
         }
         public void IncAngle(object obj)
@@ -106,6 +112,7 @@ namespace asdome_desktop
             if((stanwr.encoder1 + 1) > 90)
             {
                 stanwr.encoder1 = 90;
+                stanwr.stateSh1 = false;
             }
             else
             {
@@ -115,10 +122,15 @@ namespace asdome_desktop
             if ((stanwr.encoder2 + 1) > 90)
             {
                 stanwr.encoder2 = 90;
+                stanwr.stateSh2 = false;
             }
             else
             {
                 stanwr.encoder2 += 1;
+            }
+            if (stanwr.stateSh1 == false && stanwr.stateSh2 == false)
+            {
+                timer.Dispose();
             }
         }
 

@@ -332,7 +332,7 @@ namespace asdome_desktop
         //{
 
         //}
-        public MoveParamsAnswer(string name, string req, byte[] param = null) : base(name, new byte[7] , req)
+        public MoveParamsAnswer(string name, string req, byte[] param = null) : base(name, param, req)
         {
 
         }
@@ -445,7 +445,7 @@ namespace asdome_desktop
         //    //else
         //    //    this.param = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         //}
-        public StatusAnswer(string name, string req, byte[] param = null ):base(name, new byte[15], req)
+        public StatusAnswer(string name, string req, byte[] param = null ):base(name, param, req)
         {
 
         }
