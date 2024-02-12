@@ -280,7 +280,7 @@ namespace asdome_desktop
                     Console.WriteLine(string.Format("recv: {0:HH:mm:ss}  |  {1}", DateTime.Now, BitConverter.ToString(buffer.ToArray()) + "-0D"));
 
                     asdptl.answer(buffer.ToArray());
-                    dd_ptl.answer(Encoding.ASCII.GetBytes("\r\nstate: 50\r\ntimeout: 100\r\n"));
+                    //dd_ptl.answer(Encoding.ASCII.GetBytes("\r\nstate: 50\r\ntimeout: 100\r\n"));
                     buffer.Clear();
                 }
                 else
