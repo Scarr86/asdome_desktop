@@ -19,12 +19,14 @@ namespace asdome_desktop
         IASDProtocol asdptl = null;
         Simulator simulator;
         Asdome_protocol dome_ptl;
+        DD_protocol dd_ptl;
         List<byte> buffer = new List<byte>();
         public Form1()
         {
             InitializeComponent();
             simulator = new Simulator(this, this);
             dome_ptl = new Asdome_protocol(this, this);
+            dd_ptl = new DD_protocol(this);
             Logger.view = this;
         }
         public void send(byte[] buffer)
@@ -111,9 +113,9 @@ namespace asdome_desktop
             {
                 listBox2.Items.Add(s.cmd);
             }
+            listBox2.Items.Add("state protocol watchdog".ToUpper());
             listBox2.SetSelected(0, true);
 
-   
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -234,6 +236,18 @@ namespace asdome_desktop
                             asdptl.GetTLM().send();
                             break;
                         }
+                    case 10:
+                        {
+                            int i = 0;
+                            dd_ptl.send("/? p\r", "state", "timeout").on((int[] param) =>
+                            {
+                                for (; i < param.Length; i++)
+                                {
+                                    Console.WriteLine(string.Format("param({0}): {1}",i, param[i]));
+                                }
+                            });
+                            break;
+                        }
 
                     default: asdptl.send(listBox2.SelectedIndex, textBox2.Text); break;
                 }
@@ -266,6 +280,7 @@ namespace asdome_desktop
                     Console.WriteLine(string.Format("recv: {0:HH:mm:ss}  |  {1}", DateTime.Now, BitConverter.ToString(buffer.ToArray()) + "-0D"));
 
                     asdptl.answer(buffer.ToArray());
+                    dd_ptl.answer(Encoding.ASCII.GetBytes("\r\nstate: 50\r\ntimeout: 100\r\n"));
                     buffer.Clear();
                 }
                 else
