@@ -281,6 +281,7 @@ namespace asdome_desktop
 
                     asdptl.answer(buffer.ToArray());
                     //dd_ptl.answer(Encoding.ASCII.GetBytes("\r\nstate: 50\r\ntimeout: 100\r\n"));
+                    dd_ptl.answer(buffer.ToArray());
                     buffer.Clear();
                 }
                 else
