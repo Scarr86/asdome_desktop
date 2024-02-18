@@ -75,6 +75,12 @@ namespace asdome_desktop
 
         private void initSerialPort(string portName, int BaudRate)
         {
+            // ini file
+            IniFile iniFile = new IniFile("asdome.ini");
+            iniFile.Write("PortName", portName, "COMPORT");
+            iniFile.Write("BaudRate", BaudRate.ToString(), "COMPORT");
+
+
             serialPort1.PortName = portName;    
             serialPort1.BaudRate = BaudRate;    
             string[] defserialPortSettings = new  string [6];
@@ -84,7 +90,7 @@ namespace asdome_desktop
             defserialPortSettings[3] = serialPort1.DataBits.ToString();
             defserialPortSettings[4] = serialPort1.StopBits.ToString();
             defserialPortSettings[5] = serialPort1.Handshake.ToString();
-            
+
             Console.WriteLine(string.Join(Environment.NewLine, defserialPortSettings));
             serialPort1.Open();
             Console.WriteLine("isOpen:" + serialPort1.IsOpen.ToString());
@@ -94,9 +100,43 @@ namespace asdome_desktop
         {
             
         }
+        public static Form ShowDialog(string text, string caption)
+        {
+            Form prompt = new Form();
+            prompt.Width = 500;
+            prompt.Height = 300;
+            prompt.Text = caption;
+            //Label textLabel = new Label() { Left = 20, Top = 20, Text = text };
+            TextBox textBox = new TextBox() { Left = 20, Top = 20, Text = text, Multiline = true, Height = 210, Width = 440, ReadOnly=true };   
+            //NumericUpDown inputBox = new NumericUpDown() { Left = 50, Top = 50, Width = 400 };
+            //Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70 };
+            //confirmation.Click += (sender, e) => { prompt.Close(); };
+            //prompt.Controls.Add(confirmation);
+            //prompt.Controls.Add(textLabel);
+            //prompt.Controls.Add(inputBox);
+            prompt.Controls.Add(textBox);
+            prompt.ShowDialog();
+            //return (int)inputBox.Value;
+            return prompt;
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            ToolTip toolTip1 = new ToolTip();
+
+            // Set up the delays for the ToolTip.
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 100;
+            toolTip1.ReshowDelay = 500;
+            // Force the ToolTip text to be displayed whether or not the form is active.
+            toolTip1.ShowAlways = true;
+
+            // Set up the ToolTip text for the Button and Checkbox.
+            toolTip1.SetToolTip(this.button2, "My button2");
+            toolTip1.SetToolTip(this.textBox2, "My textBox2");
+
+
             label1.Text = serialPort1.IsOpen ? "Открыт" : "Закрыт";
             foreach (string s in SerialPort.GetPortNames())
             {
@@ -109,13 +149,17 @@ namespace asdome_desktop
             comboBox1.Items.AddRange(new string[] {"7200","9600", "115200"});
             comboBox1.SelectedText = "9600";
 
+            //load ini file
+            IniFile iniFile = new IniFile("asdome.ini");
+            comboBox2.Text = iniFile.ReadString("PortName", "COMPORT");
+            comboBox1.Text = iniFile.ReadString("BaudRate", "COMPORT");
+
             foreach (Cmd s in dome_ptl.getCmdList().ToArray())
             {
                 listBox2.Items.Add(s.cmd);
             }
             listBox2.Items.Add("state protocol watchdog".ToUpper());
             listBox2.SetSelected(0, true);
-
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -128,6 +172,8 @@ namespace asdome_desktop
 
         private void button2_Click(object sender, EventArgs e)
         {
+            
+
             if (serialPort1.IsOpen)
             {
                 serialPort1.Close();
@@ -160,6 +206,7 @@ namespace asdome_desktop
             comboBox1.Enabled = true;
             asdptl = null;
             simulator.Stop();
+
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -290,6 +337,18 @@ namespace asdome_desktop
                 }
             }
 
+        }
+
+        Form prompt;
+        private void button2_MouseHover(object sender, EventArgs e)
+        {
+            prompt = ShowDialog("Lorem ipsum dolor,sit amet consectetur adipisicing elit. Voluptatem quam illo ducimus rerum nobis, minus cupiditate perferendis iusto tempora voluptatum, totam laboriosam ab. Ea quos nobis modi quidem quibusdam dicta.", "123");
+
+        }
+
+        private void button2_MouseLeave(object sender, EventArgs e)
+        {
+            //prompt.Close();
         }
     }
 }
